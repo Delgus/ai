@@ -3,15 +3,23 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"os"
 
 	dg "cloud.google.com/go/dialogflow/apiv2"
+	"github.com/kelseyhightower/envconfig"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/websocket"
 	"google.golang.org/api/option"
 	"google.golang.org/genproto/googleapis/cloud/dialogflow/v2"
 )
 
+type config struct {
+	CredentialsJSON string `envconfig:"CREDENTIALS_JSON"`
+	ProjectID       string `envconfig:"PROJECT_ID"`
+	WSUrl           string `envconfig:"WS_URL"`
+	OriginalURL     string `envconfig:"ORIGINAL_URL"`
+}
+
+// Message for comunication
 type Message struct {
 	Author string `json:"author"`
 	Body   string `json:"body"`
@@ -19,34 +27,24 @@ type Message struct {
 
 func main() {
 	// configuration
-	credentialsFile := os.Getenv("CREDENTIALS_FILE")
-	if credentialsFile == "" {
-		log.Fatal("set CREDENTIALS_FILE")
-	}
-	projectID := os.Getenv("PROJECT_ID")
-	if projectID == "" {
-		log.Fatal("set PROJECT_ID")
-	}
-	originalURL := os.Getenv("ORIGINAL_URL")
-	if originalURL == "" {
-		log.Fatal("set ORIGINAL_URL")
-	}
-	wsURL := os.Getenv("WS_URL")
-	if wsURL == "" {
-		log.Fatal("set WS_URL")
+	var cfg config
+	if err := envconfig.Process("", &cfg); err != nil {
+		logrus.Fatal("can not get configuration")
 	}
 
 	// dialogflow client
 	// https://dialogflow.com/docs/reference/v2-auth-setup
-	client, err := dg.NewSessionsClient(context.Background(), option.WithCredentialsFile(`key.json`))
+	client, err := dg.NewSessionsClient(
+		context.Background(),
+		option.WithCredentialsJSON([]byte(cfg.CredentialsJSON)))
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 
 	// websocket connect
-	conn, err := websocket.Dial(wsURL, "", originalURL)
+	conn, err := websocket.Dial(cfg.WSUrl, "", cfg.OriginalURL)
 	if err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 	defer conn.Close()
 
@@ -54,7 +52,7 @@ func main() {
 	for {
 		// get message
 		if err := websocket.JSON.Receive(conn, &msg); err != nil {
-			log.Println(err)
+			logrus.Error(err)
 			break
 		}
 		// not answer on bot message
@@ -64,7 +62,7 @@ func main() {
 
 		// get dialogflow answer
 		resp, err := client.DetectIntent(context.Background(), &dialogflow.DetectIntentRequest{
-			Session: fmt.Sprintf("projects/%s/agent/sessions/%s'", projectID, msg.Author),
+			Session: fmt.Sprintf("projects/%s/agent/sessions/%s'", cfg.ProjectID, msg.Author),
 			QueryInput: &dialogflow.QueryInput{
 				Input: &dialogflow.QueryInput_Text{Text: &dialogflow.TextInput{
 					Text:         msg.Body,
@@ -73,7 +71,7 @@ func main() {
 			},
 		})
 		if err != nil {
-			log.Println(err)
+			logrus.Error(err)
 			break
 		}
 		result := resp.GetQueryResult().FulfillmentText
@@ -84,7 +82,7 @@ func main() {
 		}
 
 		if err = websocket.JSON.Send(conn, &sendMessage); err != nil {
-			log.Println(err)
+			logrus.Error(err)
 			break
 		}
 	}
