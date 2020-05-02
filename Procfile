@@ -1,1 +1,1 @@
-web: bin/ai
+worker: bin/ai
