@@ -12,7 +12,7 @@ build: ## Build the binary file
 	@go build
 
 dep: ## Get dependencies
-    @go mod vendor
+	@go mod vendor
 
 clean: ## Remove previous build
 	@rm -f ai
