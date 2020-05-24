@@ -34,5 +34,5 @@ jobs:
         script: | 
           docker pull delgus/ai-bot
           docker rm --force ai-bot  
-          docker run --name=ai-bot -d -e CREDENTIALS_JSON=${{ secrets.CREDENTIALS_JSON }} -e ORIGINAL_URL=${{ secrets.ORIGINAL_URL }} -e PROJECT_ID=${{ secrets.PROJECT_ID }} -e WS_URL=${{ secrets.WS_URL }} delgus/ai-bot
+          docker run --name=ai-bot -d --restart unless-stopped -e CREDENTIALS_JSON=${{ secrets.CREDENTIALS_JSON }} -e ORIGINAL_URL=${{ secrets.ORIGINAL_URL }} -e PROJECT_ID=${{ secrets.PROJECT_ID }} -e WS_URL=${{ secrets.WS_URL }} delgus/ai-bot
           
