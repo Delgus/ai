@@ -8,13 +8,24 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/setup-go@v1
+    - name: setup golang
+      uses: actions/setup-go@v1
       with:
         go-version: 1.14
+
     - uses: actions/checkout@v1
+
+    - name: get dependencies
+      run: make dep
       
     - name: install golangci-lint
-      run: curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.21.0
+      run: curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh| sh -s -- -b $(go env GOPATH)/bin v1.27.0
+
+    - name: run linter
+      run: $(go env GOPATH)/bin/golangci-lint run
+
+    - name: build
+      run: CGO_ENABLED=0 make build
 
     - name: golangci-lint
       run: $(go env GOPATH)/bin/golangci-lint run
