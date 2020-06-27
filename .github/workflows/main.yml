@@ -34,6 +34,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+        registry: ${{ secrets.DOCKER_REGISTRY }}  
         repository: delgus/ai-bot
         tags: latest
       
@@ -43,7 +44,7 @@ jobs:
         username: ${{ secrets.USER }}
         password: ${{ secrets.PSW }}
         script: | 
-          docker pull delgus/ai-bot
+          docker pull ${{ secrets.DOCKER_REGISTRY }}/delgus/ai-bot
           docker rm --force ai-bot  
           docker run --name=ai-bot -d --restart unless-stopped -e CREDENTIALS_JSON=${{ secrets.CREDENTIALS_JSON }} -e ORIGINAL_URL=${{ secrets.ORIGINAL_URL }} -e PROJECT_ID=${{ secrets.PROJECT_ID }} -e WS_URL=${{ secrets.WS_URL }} delgus/ai-bot
           
