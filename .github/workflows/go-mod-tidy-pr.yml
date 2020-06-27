@@ -1,0 +1,31 @@
+name: go-mod-tidy-pr
+
+on:
+  schedule:
+    - cron: "55 14 * * *"
+
+jobs:
+  go-mod-tidy-pr:
+    name: go-mod-tidy-pr
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Run go-mod-tidy-pr
+        uses: sue445/go-mod-tidy-pr@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git_user_name: GitHub Actions
+          git_user_email: github-actions@example.cpm
+          # reviewer: foo
+          # assign: foo
+          # milestone: some_milestone
+          # labels: go-mod-tidy
+          # draft: "true"
+          # go_mod_directory: "/dir/to/go-mod"
+          # go_version: 1.14.2
+          # debug: "true"
+          # duplicate: "true"
+          # timezone: Asia/Tokyo
