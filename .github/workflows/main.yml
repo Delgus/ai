@@ -38,5 +38,4 @@ jobs:
         PROJECT_ID: ${{ secrets.PROJECT_ID }}
         ORIGINAL_URL: ${{ secrets.ORIGINAL_URL }}
         WS_URL: ${{ secrets.WS_URL }}
-        DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
           
