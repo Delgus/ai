@@ -25,17 +25,18 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-        registry: ${{ secrets.DOCKER_REGISTRY }}  
+        #registry: ${{ secrets.DOCKER_REGISTRY }}  
         repository: delgus/ai-bot
         tags: latest
-      
-    - uses: appleboy/ssh-action@v0.0.9
+
+    - uses: sagebind/docker-swarm-deploy-action@v2
       with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USER }}
-        password: ${{ secrets.PSW }}
-        script: | 
-          docker pull ${{ secrets.DOCKER_REGISTRY }}/delgus/ai-bot
-          docker rm --force ai-bot  
-          docker run --name=ai-bot -d --restart unless-stopped -e CREDENTIALS_JSON=${{ secrets.CREDENTIALS_JSON }} -e ORIGINAL_URL=${{ secrets.ORIGINAL_URL }} -e PROJECT_ID=${{ secrets.PROJECT_ID }} -e WS_URL=${{ secrets.WS_URL }} delgus/ai-bot
+        remote_host: tcp://${{ secrets.HOST }}:2376
+        args: stack deploy -c deploy.yml ai
+      env:
+        CREDENTIALS_JSON: ${{ secrets.CREDENTIALS_JSON }}
+        PROJECT_ID: ${{ secrets.PROJECT_ID }}
+        ORIGINAL_URL: ${{ secrets.ORIGINAL_URL }}
+        WS_URL: ${{ secrets.WS_URL }}
+        DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
           
