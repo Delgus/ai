@@ -76,9 +76,9 @@ func main() {
 		}
 		result := resp.GetQueryResult().FulfillmentText
 		if result == "" {
-			sendMessage = Message{Body: ` (бот) Чего? Не понимаю тебя!`}
+			sendMessage = Message{Body: `Чего? Не понимаю тебя!`}
 		} else {
-			sendMessage = Message{Body: ` (бот) ` + result}
+			sendMessage = Message{Body: result}
 		}
 
 		if err = websocket.JSON.Send(conn, &sendMessage); err != nil {
