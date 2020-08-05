@@ -7,6 +7,6 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/sirupsen/logrus v1.6.0
 	golang.org/x/net v0.0.0-20200707034311-ab3426394381
-	google.golang.org/api v0.29.0
-	google.golang.org/genproto v0.0.0-20200729003335-053ba62fc06f
+	google.golang.org/api v0.30.0
+	google.golang.org/genproto v0.0.0-20200804131852-c06518451d9c
 )
