@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  ai:
+    image: delgus/ai-bot
+    environment:
+      - CREDENTIALS_JSON=${CREDENTIALS_JSON}
+      - PROJECT_ID=${PROJECT_ID}
+      - WS_URL=${WS_URL}
+      - ORIGINAL_URL=${ORIGINAL_URL}
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 3s
+        order: start-first
+        failure_action: rollback
+        monitor: 1m
+      restart_policy:
+        max_attempts: 3

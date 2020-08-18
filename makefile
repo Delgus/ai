@@ -9,6 +9,7 @@ lint: ## Lint the files
 	@golangci-lint run
 
 build: ## Build the binary file
+	@go clean -cache -modcache -i -r
 	@go build
 
 dep: ## Get dependencies
