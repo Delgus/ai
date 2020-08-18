@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/url"
+	"time"
 
 	dg "cloud.google.com/go/dialogflow/apiv2"
+	"github.com/gorilla/websocket"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/net/websocket"
 	"google.golang.org/api/option"
 	"google.golang.org/genproto/googleapis/cloud/dialogflow/v2"
 )
@@ -15,14 +17,25 @@ import (
 type config struct {
 	CredentialsJSON string `envconfig:"CREDENTIALS_JSON"`
 	ProjectID       string `envconfig:"PROJECT_ID"`
-	WSUrl           string `envconfig:"WS_URL"`
-	OriginalURL     string `envconfig:"ORIGINAL_URL"`
+	WSUrl           string `envconfig:"WS_URL" default:"wss://chat.delgus.com/entry"`
 }
 
 // Message for comunication
 type Message struct {
 	Author string `json:"author"`
 	Body   string `json:"body"`
+}
+
+func newConn(u string) *websocket.Conn {
+	for {
+		conn, _, err := websocket.DefaultDialer.Dial(u, nil)
+		if err != nil {
+			// hardcore reconnect
+			time.Sleep(10 * time.Second)
+			continue
+		}
+		return conn
+	}
 }
 
 func main() {
@@ -41,20 +54,23 @@ func main() {
 		logrus.Fatal(err)
 	}
 
-	// websocket connect
-	conn, err := websocket.Dial(cfg.WSUrl, "", cfg.OriginalURL)
+	u, err := url.Parse(cfg.WSUrl)
 	if err != nil {
-		logrus.Fatal(err)
+		logrus.Fatal("not correct url")
 	}
-	defer conn.Close()
+
+	// websocket connect
+	conn := newConn(u.String())
 
 	var msg, sendMessage Message
 	for {
 		// get message
-		if err := websocket.JSON.Receive(conn, &msg); err != nil {
+		if err := conn.ReadJSON(&msg); err != nil {
+			conn.Close()
 			logrus.Error(err)
-			break
+			conn = newConn(u.String())
 		}
+
 		// not answer on bot message
 		if msg.Body == sendMessage.Body {
 			continue
@@ -76,14 +92,15 @@ func main() {
 		}
 		result := resp.GetQueryResult().FulfillmentText
 		if result == "" {
-			sendMessage = Message{Body: ` (бот) Чего? Не понимаю тебя!`}
+			sendMessage = Message{Body: `Чего? Не понимаю тебя!`}
 		} else {
-			sendMessage = Message{Body: ` (бот) ` + result}
+			sendMessage = Message{Body: result}
 		}
 
-		if err = websocket.JSON.Send(conn, &sendMessage); err != nil {
+		if err = conn.WriteJSON(&sendMessage); err != nil {
 			logrus.Error(err)
-			break
+			conn.Close()
+			conn = newConn(u.String())
 		}
 	}
 }
