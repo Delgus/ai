@@ -6,7 +6,6 @@ services:
       - CREDENTIALS_JSON=${CREDENTIALS_JSON}
       - PROJECT_ID=${PROJECT_ID}
       - WS_URL=${WS_URL}
-      - ORIGINAL_URL=${ORIGINAL_URL}
     deploy:
       replicas: 1
       update_config:

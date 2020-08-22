@@ -17,7 +17,7 @@ import (
 type config struct {
 	CredentialsJSON string `envconfig:"CREDENTIALS_JSON"`
 	ProjectID       string `envconfig:"PROJECT_ID"`
-	WSUrl           string `envconfig:"WS_URL" default:"wss://chat.delgus.com/entry"`
+	WSUrl           string `envconfig:"WS_URL"`
 }
 
 // Message for comunication
